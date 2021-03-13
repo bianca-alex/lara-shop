@@ -10,6 +10,8 @@ window.Vue = require('vue');
 require('./components/SelectDistrict');
 require('./components/UserAddressesCreateAndEdit');
 
+require('sweetalert');
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
