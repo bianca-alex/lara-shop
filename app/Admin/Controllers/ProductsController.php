@@ -37,7 +37,7 @@ class ProductsController extends AdminController
 
         $grid->actions(function ($actions) {
             $actions->disableView();
-            $actions->disableDelete();
+            //$actions->disableDelete();
         });
         $grid->tools(function ($tools) {
             // 禁用批量删除按钮
@@ -55,7 +55,7 @@ class ProductsController extends AdminController
      * @param mixed $id
      * @return Show
      */
-    protected function detail($id)
+    /*protected function detail($id)
     {
         $show = new Show(Product::findOrFail($id));
 
@@ -72,7 +72,7 @@ class ProductsController extends AdminController
         $show->field('updated_at', __('Updated at'));
 
         return $show;
-    }
+    }*/
 
     /**
      * Make a form builder.
@@ -106,6 +106,11 @@ class ProductsController extends AdminController
         $form->saving(function (Form $form) {
             $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
         });
+		$form->tools(function (Form\Tools $tools) {
+    		$tools->disableDelete();
+    		$tools->disableView();
+   			$tools->disableList();
+		});
 
         return $form;
     }
