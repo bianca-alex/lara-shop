@@ -13,6 +13,17 @@ use App\Jobs\CloseOrder;
 
 class OrdersController extends Controller
 {
+
+    public function index(Request $request){
+        $user = $request->user();
+        $orders = Order::query()
+            ->with(['items.product', 'items.productSku'])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate();
+        return view('orders.index', ['orders' => $orders]);
+    }
+
     //
     public function store(OrderRequest $request)
     {
