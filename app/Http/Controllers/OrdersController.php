@@ -7,9 +7,11 @@ use App\Http\Requests\OrderRequest;
 use App\Models\ProductSku;
 use App\Models\UserAddress;
 use App\Models\Order;
-use Carbon\Carbon;
+/*use Carbon\Carbon;
 use App\Exceptions\InvalidRequestException;
-use App\Jobs\CloseOrder;
+use App\Jobs\CloseOrder;*/
+//use App\Services\CartService;
+use App\Services\OrderService;
 
 class OrdersController extends Controller
 {
@@ -30,10 +32,12 @@ class OrdersController extends Controller
     }
 
     //
-    public function store(OrderRequest $request)
+    public function store(OrderRequest $request, OrderService $orderService)
     {
         $user = $request->user();
-        $order = \DB::transaction(function() use ($user, $request){
+        $address = UserAddress::find($request->input('address_id'));
+        return $orderService->store($user, $address, $request->input('remark'), $request->input('items'));
+        /*$order = \DB::transaction(function() use ($user, $request, $cartService){
             $address = UserAddress::find($request->input('address_id'));
             $address->update(['last_used_at' => Carbon::now()]);
             $order = new Order([
@@ -66,11 +70,12 @@ class OrdersController extends Controller
             }
             $order->update(['total_amount' => $totalAmount]);
             $skuIds = collect($items)->pluck('sku_id');
-            $user->cartItems()->whereIn('product_sku_id', $skuIds)->delete();
+            //$user->cartItems()->whereIn('product_sku_id', $skuIds)->delete();
+            $cartService->remove($skuIds);
             return $order;
         });
 
         $this->dispatch(new CloseOrder($order, config('app.order_ttl')));
-        return $order;
+        return $order;*/
     }
 }
