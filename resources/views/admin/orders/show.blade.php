@@ -41,7 +41,7 @@
       @endforeach
       <tr>
         <td>订单金额：</td>
-        <td colspan="3">￥{{ $order->total_amount }}</td>
+        <td>￥{{ $order->total_amount }}</td>
         <!-- 这里也新增了一个发货状态 -->
         <td>发货状态：</td>
         <td>{{ \App\Models\Order::$shipStatusMap[$order->ship_status] }}</td>
@@ -86,6 +86,7 @@
       @endif
       <!-- 订单发货结束 -->
       @if($order->refund_status !== \App\Models\Order::REFUND_STATUS_PENDING)
+        @if($order->refund_status !== \App\Models\Order::REFUND_STATUS_SUCCESS)
       <tr>
         <td>退款状态：</td>
         <td colspan="2">{{ \App\Models\Order::$refundStatusMap[$order->refund_status] }}，理由：{{ $order->extra['refund_reason'] }}</td>
@@ -97,6 +98,7 @@
           @endif
         </td>
       </tr>
+	    @endif
       @endif
       </tbody>
     </table>
@@ -131,6 +133,41 @@ $(document).ready(function() {
             _token: LA.token,
           }),
           contentType: 'application/json',  // 请求的数据格式为 JSON
+        });
+      },
+      allowOutsideClick: false
+    }).then(function (ret) {
+      // 如果用户点击了『取消』按钮，则不做任何操作
+      if (ret.dismiss === 'cancel') {
+        return;
+      }
+      swal({
+        title: '操作成功',
+        type: 'success'
+      }).then(function() {
+        // 用户点击 swal 上的按钮时刷新页面
+        location.reload();
+      });
+    });
+  });
+  // 同意 按钮的点击事件
+  $('#btn-refund-agree').click(function() {
+    swal({
+      title: '确认要将款项退还给用户？',
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: "确认",
+      cancelButtonText: "取消",
+      showLoaderOnConfirm: true,
+      preConfirm: function() {
+        return $.ajax({
+          url: '{{ route('admin.orders.handle_refund', [$order->id]) }}',
+          type: 'POST',
+          data: JSON.stringify({
+            agree: true, // 代表同意退款
+            _token: LA.token,
+          }),
+          contentType: 'application/json',
         });
       },
       allowOutsideClick: false

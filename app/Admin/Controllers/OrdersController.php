@@ -169,7 +169,15 @@ class OrdersController extends AdminController
         }
 
         if($request->input('agree')){
-        
+
+            $extra = $order->extra ?: [];
+            unset($extra['refund_disagree_reason']);
+            $order->update([
+                'extra' => $extra,
+            ]);
+
+            $this->_refundOrder($order);
+
         }else{
             // 将拒绝退款理由放到订单的 extra 字段中
             $extra = $order->extra ?: [];
@@ -181,5 +189,40 @@ class OrdersController extends AdminController
             ]);     
         }
 		return $order;
+    }
+
+    public function _refundOrder($order){
+        switch($order->payment_method){
+            case 'wechat':
+                break;
+            case 'alipay':
+                $refundNo = Order::getAvailableRefundNo();
+                $ret = app('alipay')->refund([
+                        'out_trade_no' => $order->no,
+                        'refund_amount' => $order->total_amount,
+                        'out_request_no' => $refundNo,
+                ]);
+                if($ret->sub_cod){
+                    $extra = $order->extra;
+                    $extra['refund_failed_code'] = $ret->sub_code;
+                    // 将订单的退款状态标记为退款失败
+                    $order->update([
+                        'refund_no' => $refundNo,
+                        'refund_status' => Order::REFUND_STATUS_FAILED,
+                        'extra' => $extra,
+                    ]);
+                }else{
+                    // 将订单的退款状态标记为退款成功并保存退款订单号
+                    $order->update([
+                        'refund_no' => $refundNo,
+                        'refund_status' => Order::REFUND_STATUS_SUCCESS,
+                    ]);
+                }
+				break;
+			default:
+                // 原则上不可能出现，这个只是为了代码健壮性
+                throw new InternalException('未知订单支付方式：'.$order->payment_method);
+                break;
+        }
     }
 }
