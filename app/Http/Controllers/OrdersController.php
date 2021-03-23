@@ -7,6 +7,7 @@ use App\Http\Requests\OrderRequest;
 use App\Models\ProductSku;
 use App\Models\UserAddress;
 use App\Models\Order;
+use App\Exceptions\InvalidRequestException;
 /*use Carbon\Carbon;
 use App\Exceptions\InvalidRequestException;
 use App\Jobs\CloseOrder;*/
@@ -77,5 +78,16 @@ class OrdersController extends Controller
 
         $this->dispatch(new CloseOrder($order, config('app.order_ttl')));
         return $order;*/
+    }
+
+    public function received(Order $order, Request $request){
+        $this->authorize('own', $order);
+        if($order->ship_status != Order::SHIP_STATUS_DELIVERED){
+            throw new InvalidRequestException('发货状态不正确');
+        }
+
+        $order->update(['ship_status' => Order::SHIP_STATUS_RECEIVED]);
+
+        return $order;
     }
 }
