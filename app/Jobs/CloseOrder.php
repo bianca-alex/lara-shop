@@ -44,6 +44,10 @@ class CloseOrder implements ShouldQueue
                 $item->productSku->addStock($item->amount);
             }
             \Log::info($this->order->no.'订单'.config('app.order_ttl').'s内未支付,订单关闭');
+
+            if ($this->order->couponCode) {
+                $this->order->couponCode->changeUsed(false);
+            }
         });
 
     }
