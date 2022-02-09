@@ -30,6 +30,7 @@ class UpdateProductRating implements ShouldQueue
     public function handle(OrderReviewed $event)
     {
         //
+        \Log::info('event rating 测试');
         $items = $event->getOrder()->items()->with(['product'])->get();
         foreach($items as $item){
             $result = OrderItem::query()

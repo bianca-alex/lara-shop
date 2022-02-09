@@ -27,6 +27,6 @@
         "@fortawesome/fontawesome-free": "^5.15.2",
         "china-area-data": "^5.0.1",
         "sweetalert": "^2.1.2",
-        "yarn": "^1.22.10"
+        "yarn": "^1.22.17"
     }
 }

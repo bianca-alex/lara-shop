@@ -27,7 +27,7 @@ class UpdateProductSoldCount
      */
     public function handle(OrderPaid $event)
     {
-        \Log::info('event 测试');
+        \Log::info('event sold_count测试');
         //
         $order = $event->getOrder();
         $order->load('items.product');
